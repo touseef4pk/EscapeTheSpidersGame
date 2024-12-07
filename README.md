@@ -18,7 +18,7 @@ Escape the Spiders is a spooky, mouse pointer-based game where terrifying spider
 ## How to Run the Game  
 1. Clone the repository:  
    ```bash
-   git clone https://github.com/touseef4pk/escape-the-spiders.git
+   git clone https://github.com/touseef4pk/escapethespidersgame.git
    ```  
 2. Navigate to the project folder:  
    ```bash
