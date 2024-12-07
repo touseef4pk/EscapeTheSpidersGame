@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <style>
+ 
+     
+    
+
+    body {
+      margin: 0;
+      overflow: hidden; /* Prevent scrollbars */
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    canvas {
+      display: block; /* Fullscreen canvas */
+    }
+    .score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 24px;
+      z-index: 10;
+    }
+    .game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      text-align: center;
+      z-index: 20;
+      display: none;
+    }
+ 
+
+  </style>
+
+</head>
+
+ <body>
+   <div class="score">Score: <span id="score">0</span></div>
+  <div class="game-over" id="gameOver">
+    <p>Game Over</p>
+    <button onclick="restartGame()">Restart</button>
+  </div>
+  
+  <script>
+
+ 
+    
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    let score = 0;
+    let gameRunning = true;
+
+    // Create the canvas and context
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    document.body.appendChild(canvas);
+
+    // Set up canvas size
+    canvas.width = w;
+    canvas.height = h;
+
+    const scoreElement = document.getElementById("score");
+    const gameOverElement = document.getElementById("gameOver");
+
+    // Function to create a spider
+    function spawn() {
+      return {
+        x: Math.random() * w,
+        y: Math.random() * h,
+        speed: Math.random() * 2 + 1,
+        follow(targetX, targetY) {
+          this.x += (targetX - this.x) * 0.01 * this.speed;
+          this.y += (targetY - this.y) * 0.01 * this.speed;
+        },
+        tick() {
+          drawSpider(this.x, this.y); // Draw spider at the current position
+        },
+        isCloseTo(targetX, targetY) {
+          return Math.hypot(this.x - targetX, this.y - targetY) < 20; // Distance for collision
+        },
+      };
+    }
+
+    // Create the spiders
+    const spiders = Array.from({ length: 3 }, spawn);
+
+    // Track mouse position
+    let mouseX = w / 2;
+    let mouseY = h / 2;
+
+    addEventListener("pointermove", (e) => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    });
+
+function drawSpider(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+
+  // Glowing red aura
+  ctx.shadowColor = "red";
+  ctx.shadowBlur = 15;
+
+  // Draw the body
+  ctx.fillStyle = "black"; // Darker spider body
+  ctx.beginPath();
+  ctx.arc(0, 0, 25, 0, Math.PI * 2); // Larger body
+  ctx.fill();
+
+  // Draw the head
+  ctx.beginPath();
+  ctx.arc(0, -35, 15, 0, Math.PI * 2); // Larger head
+  ctx.fill();
+
+  // Reset shadow for details
+  ctx.shadowBlur = 0;
+
+  // Draw the eyes
+  ctx.fillStyle = "red"; // Bright red glowing eyes
+  ctx.beginPath();
+  ctx.arc(-7, -40, 4, 0, Math.PI * 2); // Left eye
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(7, -40, 4, 0, Math.PI * 2); // Right eye
+  ctx.fill();
+
+  // Draw the fangs
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(-5, -25);
+  ctx.lineTo(-10, -15); // Left fang
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(5, -25);
+  ctx.lineTo(10, -15); // Right fang
+  ctx.stroke();
+
+  // Draw sharper, jagged legs
+  ctx.strokeStyle = "white";
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 4; i++) {
+    // Left legs
+    ctx.beginPath();
+    ctx.moveTo(-25, -5 + i * 10);
+    ctx.lineTo(-50, -20 + i * 10);
+    ctx.lineTo(-40, -40 + i * 10); // Sharper end
+    ctx.stroke();
+
+    // Right legs
+    ctx.beginPath();
+    ctx.moveTo(25, -5 + i * 10);
+    ctx.lineTo(50, -20 + i * 10);
+    ctx.lineTo(40, -40 + i * 10); // Sharper end
+    ctx.stroke();
+  }
+
+  ctx.restore();
+}
+
+
+    function anim() {
+      if (!gameRunning) return;
+
+      if (canvas.width !== innerWidth) w = canvas.width = innerWidth;
+      if (canvas.height !== innerHeight) h = canvas.height = innerHeight;
+
+      ctx.fillStyle = "#000"; // Black background
+      ctx.fillRect(0, 0, w, h);
+
+      spiders.forEach((spider) => {
+        spider.follow(mouseX, mouseY);
+        spider.tick();
+
+        // Check for collision with mouse
+        if (spider.isCloseTo(mouseX, mouseY)) {
+          gameOver();
+        }
+      });
+
+      score++;
+      scoreElement.textContent = score;
+
+      requestAnimationFrame(anim);
+    }
+
+    function gameOver() {
+      gameRunning = false;
+      gameOverElement.style.display = "block";
+    }
+
+    function restartGame() {
+      gameRunning = true;
+      score = 0;
+      spiders.splice(0, spiders.length, ...Array.from({ length: 3 }, spawn));
+      gameOverElement.style.display = "none";
+      requestAnimationFrame(anim);
+    }
+
+    // Start animation
+    requestAnimationFrame(anim);
+ 
+
+    
+  </script>
+
+   
+    
+ </body>
+</html>
